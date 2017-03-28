@@ -103,13 +103,14 @@ start_ts = time.time()
 def print_event(cpu, data, size):
     event = ct.cast(data, ct.POINTER(ThreadEvent)).contents
     name = event.name
-    if event.type == "pthread":
+    etype = event.type.decode()
+    if etype == "pthread":
         name = bpf.sym(event.runtime_id, args.pid, show_module=True)
         tid = event.native_id
     else:
         tid = "R=%s/N=%s" % (event.runtime_id, event.native_id)
     print("%-8.3f %-16s %-8s %-30s" % (
-        time.time() - start_ts, tid, event.type, name))
+        time.time() - start_ts, tid, etype, name))
 
 bpf["threads"].open_perf_buffer(print_event)
 while 1:
